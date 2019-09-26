@@ -1,11 +1,16 @@
 const express = require('express')
 const router = express.Router()
+const BigNumber = require('bignumber.js')
 
 const {IconService, iconService} = require('../lib/restful')
-const SignedTransaction = IconService.SignedTransaction
-const { CallBuilder, IcxTransactionBuilder } = IconService.IconBuilder
 const logger = require('../lib/logger')
 const config = require('../lib/config')
+
+const IconWallet  = IconService.IconWallet
+const SignedTransaction = IconService.SignedTransaction
+const { CallBuilder, IcxTransactionBuilder } = IconService.IconBuilder
+const IconConverter = IconService.IconConverter
+const IconAmount = IconService.IconAmount
 
 async function getDefaultStepCost() {
     const methodName = 'getStepCosts'
@@ -22,45 +27,42 @@ async function getDefaultStepCost() {
 }
 
 async function sendTransaction(privateKey, toAddress, toValue) {
-    const wallet = IconWallet.loadPrivateKey(privateKey)
-    const walletAddress = wallet.getAddress()
+    try {
+        const wallet = IconWallet.loadPrivateKey(privateKey)
+        const walletAddress = wallet.getAddress()
 
-    const value = IconAmount.of(toValue, IconAmount.Unit.ICX).toLoop()
-    logger.info('IconAmount of toLoop', JSON.stringify(value))
+        const value = IconAmount.of(toValue, IconAmount.Unit.ICX).toLoop()
+        logger.info('IconAmount of toLoop', JSON.stringify(value))
+        
+        const networkId = new BigNumber(config.NetworkID)
+        const nonce = IconConverter.toBigNumber(config.None)
+        const version = new BigNumber(config.Version)
+        const stepLimit = await getDefaultStepCost()
+        const timestamp = (new Date()).getTime() * 1000
 
-    const assets = await iconService.getBalance(walletAddress).execute()
-    const balance = assets.toFixed() / config.UnitIcx
-    if (balance < (config.TxFee + value)) {
-        logger.info(`${walletAddress} has ${balance} amount, need ${value + config.TxFee} amount`)
-        return {code: 400, msg: 'not enough amount'}
+        const icxTransactionBuilder = new IcxTransactionBuilder()
+        const transaction = icxTransactionBuilder
+        .nid(networkId)
+        .nonce(nonce)
+        .from(walletAddress)
+        .to(toAddress)
+        .value(value)
+        .version(version)
+        .stepLimit(stepLimit)
+        .timestamp(timestamp)
+        .build()
+
+        const signedTransaction = new SignedTransaction(transaction, wallet)
+        const txHash = await iconService.sendTransaction(signedTransaction).execute()
+        logger.info('sendTransaction txHash', txHash)
+
+        return { code: 0, msg: 'success', data: txHash }
+        
+    } catch (error) {
+        logger.info('sendTransaction Error', error.toString())
+        return { code: 405, msg: error.toString() } 
     }
-    
-    const networkId = new BigNumber(config.NetworkID)
-    const nonce = IconConverter.toBigNumber(config.None)
-    const version = new BigNumber(config.Version)
-    const stepLimit = await getDefaultStepCost()
-    const timestamp = (new Date()).getTime() * 1000
-
-    const icxTransactionBuilder = new IcxTransactionBuilder()
-    const transaction = icxTransactionBuilder
-    .nid(networkId)
-    .nonce(nonce)
-    .from(walletAddress)
-    .to(toAddress)
-    .value(value)
-    .version(version)
-    .stepLimit(stepLimit)
-    .timestamp(timestamp)
-    .build()
-
-    const signedTransaction = new SignedTransaction(transaction, wallet)
-    const txHash = await iconService.sendTransaction(signedTransaction).execute()
-    logger.info('sendTransaction txHash', txHash)
-
-    return { code: 0, msg: 'success', data: txHash }
 }
-
-
 
 router.post('/assetsTransfer', async function (req, res) {
     if (!req.body || !req.body.key || !req.body.to || !req.body.value) 
