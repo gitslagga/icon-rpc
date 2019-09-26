@@ -1,0 +1,12 @@
+{
+    "apps": [{
+        "name": "icon-testdapps",
+        "script": "./index.js",
+        "log_date_format": "YYYY-MM-DD HH:mm:ss SSS",
+        "env": {
+            "NODE_ENV": "testdapps"
+        },
+        "output": "/tmp/wwwlogs/icon-testdapps/out.log",
+        "error": "/tmp/wwwlogs/icon-testdapps/error.log"
+    }]
+}

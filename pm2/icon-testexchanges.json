@@ -1,0 +1,12 @@
+{
+    "apps": [{
+        "name": "icon-testexchanges",
+        "script": "./index.js",
+        "log_date_format": "YYYY-MM-DD HH:mm:ss SSS",
+        "env": {
+            "NODE_ENV": "testexchanges"
+        },
+        "output": "/tmp/wwwlogs/icon-testexchanges/out.log",
+        "error": "/tmp/wwwlogs/icon-testexchanges/error.log"
+    }]
+}

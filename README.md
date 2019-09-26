@@ -1,3 +1,10 @@
+ ## restful api about icon rpc
+ * npm install express --save
+ * npm install body-parser
+ * npm install icon-sdk-js --save
+ * set DEBUG=express:* & node index.js
+ * pm2 start pm2/icon-testdapps.json
+
 ## accounts
 * alice
   * account address hx4319b60909e402c8499c6407afdd462471b268fe

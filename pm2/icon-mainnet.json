@@ -1,0 +1,12 @@
+{
+    "apps": [{
+        "name": "icon-mainnet",
+        "script": "./index.js",
+        "log_date_format": "YYYY-MM-DD HH:mm:ss SSS",
+        "env": {
+            "NODE_ENV": "mainnet"
+        },
+        "output": "/tmp/wwwlogs/icon-mainnet/out.log",
+        "error": "/tmp/wwwlogs/icon-mainnet/error.log"
+    }]
+}

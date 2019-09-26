@@ -1,0 +1,12 @@
+{
+    "apps": [{
+        "name": "icon-production",
+        "script": "./index.js",
+        "log_date_format": "YYYY-MM-DD HH:mm:ss SSS",
+        "env": {
+            "NODE_ENV": "production"
+        },
+        "output": "/tmp/wwwlogs/icon-production/out.log",
+        "error": "/tmp/wwwlogs/icon-production/error.log"
+    }]
+}
